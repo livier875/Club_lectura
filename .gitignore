@@ -1,0 +1,6 @@
+# Archivos ejecutables de Windows
+*.exe
+
+# Archivos temporales y caché de Python
+__pycache__/
+*.pyc
