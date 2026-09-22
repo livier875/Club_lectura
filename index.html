@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BiblioRed - Tu Comunidad Literaria</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="logo" onclick="navegarA('inicio')" style="cursor: pointer;">
+            <i class="fas fa-book-open"></i> <span>BiblioRed</span>
+        </div>
+        <div class="search-bar">
+            <input type="text" id="input-busqueda" placeholder="Buscar club, libro o autor...">
+            <button onclick="ejecutarBusqueda()"><i class="fas fa-search"></i></button>
+        </div>
+        <nav class="nav-menu">
+            <a href="#" onclick="navegarA('inicio')"><i class="fas fa-home"></i> Inicio</a>
+            <a href="#" onclick="navegarA('mapa')"><i class="fas fa-map-marked-alt"></i> Mapa</a>
+            <a href="#" onclick="navegarA('comunidad')"><i class="fas fa-users"></i> Comunidad</a>
+            <a href="#" onclick="navegarA('espacios')"><i class="fas fa-coffee"></i> Espacios</a>
+            <a href="#" onclick="navegarA('autores')"><i class="fas fa-pen-nib"></i> Autores</a>
+            <a href="#" onclick="navegarA('libros')"><i class="fas fa-book"></i> Libros</a>
+            <a href="#" onclick="navegarA('clubes')"><i class="fas fa-users-cog"></i> Clubes</a>
+        </nav>
+        <div class="header-right">
+            <div id="user-status">
+                <button onclick="abrirModal('auth-modal')" class="btn-login-header">Iniciar Sesión</button>
+            </div>
+        </div>
+    </header>
+
+    <div id="auth-modal" class="auth-overlay">
+        <div class="auth-box">
+            <span class="close-modal" onclick="cerrarModal('auth-modal')">×</span>
+            <h2>Mi Cuenta</h2>
+            <form id="form-login">
+                <div class="form-group">
+                    <label>Nombre de Usuario</label>
+                    <input type="text" id="login-user" placeholder="Ej: juanlector" required>
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="login-pass" placeholder="La contraseña es 123" required>
+                </div>
+                <p id="login-error" style="color: red; font-size: 0.85rem; display: none;">Usuario o contraseña incorrectos.</p>
+                <button type="submit" class="btn-submit">Entrar a BiblioRed</button>
+            </form>
+            <p style="text-align: center; font-size: 0.9rem; margin-top: 15px;">¿No tienes cuenta? <a href="#" onclick="cerrarModal('auth-modal'); abrirModal('register-modal');" style="color: var(--accent-orange); font-weight: bold; text-decoration: none;">Regístrate</a></p>
+        </div>
+    </div>
+
+    <div id="register-modal" class="auth-overlay">
+        <div class="auth-box" style="width: 500px; max-width: 95%;">
+            <span class="close-modal" onclick="cerrarModal('register-modal')">×</span>
+            <h2>Registro de Usuario</h2>
+            <form id="form-registro">
+                <div class="form-group">
+                    <label>Selecciona tu Rol</label>
+                    <select id="reg-rol" onchange="cambiarFormularioRegistro()" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline: none;">
+                        <option value="">-- Elige un rol --</option>
+                        <option value="usuario">Usuario</option>
+                        <option value="organizador">Organizador</option>
+                        <option value="escritor">Escritor</option>
+                        <option value="sede">Sede</option>
+                    </select>
+                </div>
+                <div id="reg-campos-comunes" style="display: none;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label>Nombre de Usuario</label>
+                            <input type="text" id="reg-user" required>
+                        </div>
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label>Contraseña</label>
+                            <input type="password" id="reg-pass" required>
+                        </div>
+                    </div>
+                </div>
+                <div id="reg-campos-dinamicos" style="margin-top: 15px; text-align: left;">
+                    <p style="font-size: 0.85rem; color: #666; text-align:center;">Por favor, selecciona un rol para continuar.</p>
+                </div>
+                <button type="submit" class="btn-submit" id="btn-submit-reg" style="display:none; margin-top: 20px;">Crear Cuenta</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="edit-profile-modal" class="auth-overlay">
+        <div class="auth-box" style="width: 500px; max-width: 95%;">
+            <span class="close-modal" onclick="cerrarModal('edit-profile-modal')">×</span>
+            <h2 style="color: #333; margin-bottom: 25px;">Mi Perfil</h2>
+            <form id="form-edit-profile">
+                <div style="display: flex; justify-content: center; align-items: center; gap: 20px; margin-bottom: 30px;">
+                    <img id="preview-foto" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23999'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>" style="width: 90px; height: 90px; border-radius: 50%; border: 3px solid var(--accent-orange); object-fit: cover; background: #eee;">
+                    <input type="file" id="input-foto" style="display: none;" accept="image/*" onchange="if(this.files[0]) { let r=new FileReader(); r.onload=e=>document.getElementById('preview-foto').src=e.target.result; r.readAsDataURL(this.files[0]); }">
+                    <button type="button" onclick="document.getElementById('input-foto').click()" style="background: white; border: 1px solid var(--accent-orange); color: var(--accent-orange); padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 0.9rem;">Subir nueva foto</button>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; text-align: left; margin-bottom: 25px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="color: #111;">Nombre de Usuario</label>
+                        <input type="text" id="edit-username" readonly style="background-color: #f4f4f4; color: #666; cursor: not-allowed; border: 1px solid #ddd;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="color: #111;">Nombre Completo</label>
+                        <input type="text" id="edit-nombre" style="border: 1px solid #ddd;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="color: #111;">Correo Electrónico</label>
+                        <input type="email" id="edit-correo" style="border: 1px solid #ddd;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="color: #111;">Número de Teléfono</label>
+                        <input type="text" id="edit-telefono" placeholder="Ej: 555-001" style="border: 1px solid #ddd;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="color: #111;">Ciudad</label>
+                        <input type="text" id="edit-ciudad" placeholder="Ej: Guadalajara" style="border: 1px solid #ddd;">
+                    </div>
+                    <div class="form-group" style="grid-column: 1 / -1; margin-bottom: 15px;">
+                        <label style="color: #111;">Biografía</label>
+                        <textarea id="edit-bio" rows="3" placeholder="Cuéntanos sobre ti..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;"></textarea>
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit" style="background-color: var(--header-bg); border-radius: 5px; font-size: 1rem; padding: 12px; margin-top: 5px;">Guardar Cambios</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="notifications-modal" class="auth-overlay">
+        <div class="auth-box" style="width: 450px; max-width: 95%; padding: 25px;">
+            <span class="close-modal" onclick="cerrarModal('notifications-modal')">×</span>
+            <h2 style="color: #333; margin-bottom: 20px; text-align: left; border-bottom: 2px solid #eee; padding-bottom: 10px;">Notificaciones</h2>
+            <div id="lista-notificaciones" style="text-align: left; max-height: 400px; overflow-y: auto;"></div>
+        </div>
+    </div>
+
+    <div id="notif-detail-modal" class="auth-overlay">
+        <div class="auth-box" style="width: 400px; max-width: 95%; text-align: left;">
+            <h3 id="notif-detail-title" style="color: var(--header-bg); margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;"></h3>
+            <p id="notif-detail-body" style="font-size: 0.95rem; line-height: 1.6; color: #444; margin-top: 20px;"></p>
+            <div style="display: flex; justify-content: flex-end; margin-top: 25px;">
+                <button onclick="cerrarModal('notif-detail-modal'); abrirModal('notifications-modal');" class="btn-outline" style="margin: 0; width: auto; padding: 8px 15px;">Volver</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE BANDEJA DE MENSAJES (MODIFICADO) -->
+    <div id="messages-modal" class="auth-overlay">
+        <div class="auth-box" style="width: 450px; max-width: 95%; padding: 25px; height: 600px; display: flex; flex-direction: column;">
+            <span class="close-modal" onclick="cerrarModal('messages-modal')">×</span>
+            <h2 style="color: #333; margin-top: 0; margin-bottom: 15px; text-align: left; border-bottom: 2px solid #eee; padding-bottom: 10px;">Bandeja de Mensajes</h2>
+            <input type="text" id="buscador-contactos" placeholder="Buscar usuario o club..." onkeyup="filtrarContactos()" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 20px; outline: none;">
+            <div id="lista-mensajes" style="text-align: left; flex: 1; overflow-y: auto;"></div>
+        </div>
+    </div>
+
+    <div id="chat-room-modal" class="auth-overlay">
+        <div class="auth-box" style="width: 450px; max-width: 95%; padding: 0; overflow: hidden; display: flex; flex-direction: column; height: 550px; background: #efeae2;">
+            <div style="background: var(--header-bg); color: white; padding: 15px; display: flex; align-items: center; gap: 15px;">
+                <i class="fas fa-arrow-left" style="cursor: pointer; font-size: 1.2rem;" onclick="cerrarModal('chat-room-modal'); window.abrirBandejaMensajes();"></i>
+                <h3 id="chat-room-title" style="margin: 0; font-size: 1.1rem;">Contacto</h3>
+            </div>
+            <div id="chat-room-body" style="flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px;"></div>
+            
+            <div style="padding: 15px; background: white; display: flex; gap: 10px; align-items: center;">
+                <input type="file" id="chat-file-input" accept="image/*" style="display: none;" onchange="window.enviarImagenChat(this)">
+                <button onclick="document.getElementById('chat-file-input').click()" style="background: #eee; color: #555; border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#ddd'" onmouseout="this.style.background='#eee'">
+                    <i class="fas fa-paperclip"></i>
+                </button>
+                <input type="text" id="chat-input" placeholder="Escribe un mensaje..." style="flex: 1; padding: 12px 15px; border: 1px solid #ddd; border-radius: 25px; outline: none;">
+                <button onclick="enviarMensajeChat()" style="background: var(--accent-orange); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer;">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-espacio-detalles" class="auth-overlay">
+        <div class="auth-box" style="width: 600px; max-width: 95%; text-align: left; padding: 0; overflow: hidden;">
+            <img id="detalle-espacio-img" src="" style="width: 100%; height: 200px; object-fit: cover; display: block;">
+            <div style="padding: 25px;">
+                <span class="close-modal" onclick="cerrarModal('modal-espacio-detalles')" style="top: 10px; right: 15px; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">×</span>
+                <h2 id="detalle-espacio-nombre" style="color: var(--header-bg); margin-top: 0; margin-bottom: 5px;"></h2>
+                <p style="color: #666; margin-bottom: 20px;"><i class="fas fa-map-marker-alt"></i> <span id="detalle-espacio-dir"></span></p>
+                <div id="detalle-espacio-info"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-espacio-eventos" class="auth-overlay">
+        <div class="auth-box" style="width: 500px; max-width: 95%; text-align: left; padding: 25px;">
+            <span class="close-modal" onclick="cerrarModal('modal-espacio-eventos')">×</span>
+            <h2 style="color: var(--header-bg); margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;">Eventos en la Sede</h2>
+            <div id="lista-eventos-sede-dinamico" style="margin-top: 20px;"></div>
+        </div>
+    </div>
+
+    <!-- MODAL DE PERFIL DE USUARIO (CENTRADOS Y BOTÓN VERDE) -->
+    <div id="modal-perfil-usuario" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; align-items: center; justify-content: center;">
+        <div class="modal-content" style="background: white; padding: 30px; border-radius: 8px; max-width: 500px; width: 90%; text-align: center; max-height: 85vh; overflow-y: auto; position: relative;">
+            <span class="close-btn" style="position: absolute; top: 15px; right: 20px; font-size: 1.5rem; cursor: pointer; color: #aaa;" onclick="cerrarModal('modal-perfil-usuario')">&times;</span>
+            
+            <!-- Foto y Datos Básicos Centrados -->
+            <img id="perfil-usuario-foto" src="" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent-orange); margin: 0 auto 15px auto; display: block;">
+            <h2 id="perfil-usuario-nombre" style="margin: 0 0 5px 0; color: var(--header-bg);">Nombre</h2>
+            <p id="perfil-usuario-rol" style="margin: 0 auto 15px auto; color: #666; font-size: 0.85rem; text-transform: uppercase; font-weight: bold; letter-spacing: 1px;"></p>
+            
+            <div style="color: #555; font-size: 0.9rem; margin-bottom: 15px; display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+                <span><i class="fas fa-map-marker-alt" style="color: var(--accent-orange);"></i> <span id="perfil-usuario-ciudad">Ciudad</span></span>
+                <span><i class="fas fa-phone" style="color: var(--accent-orange);"></i> <span id="perfil-usuario-telefono">Teléfono</span></span>
+            </div>
+            
+            <p id="perfil-usuario-bio" style="font-style: italic; color: #666; font-size: 0.95rem; margin-bottom: 25px; padding: 0 20px; text-align: center;"></p>
+
+            <!-- Sección de Clubes -->
+            <div id="perfil-clubes-container" style="border-top: 1px solid #eee; padding-top: 20px; display: none;">
+                <h4 style="margin: 0 0 15px 0; color: var(--header-bg); text-align: center;"><i class="fas fa-users"></i> Clubes que organiza</h4>
+                <div id="perfil-usuario-clubes" style="display: flex; flex-direction: column; gap: 15px;"></div>
+            </div>
+
+            <!-- ¡Botón verde actualizado! -->
+            <button class="btn-submit" style="margin-top: 25px; width: 100%; padding: 12px; font-size: 1rem; cursor: pointer; border: none; border-radius: 5px;" onclick="cerrarModal('modal-perfil-usuario')">Cerrar Perfil</button>
+        </div>
+    </div>
+
+    <main class="container">
+        
+        <div id="global-inicio" class="dashboard-view active">
+            <div class="map-box"></div> 
+            <h2 class="section-title">Títulos Más Recientes</h2>
+            <div id="inicio-libros-container" class="global-grid"></div>
+            <h2 class="section-title">Clubes de Lectura Más Conocidos</h2>
+            <div id="inicio-clubes-container" class="global-grid"></div>
+        </div>
+
+        <div id="global-mapa" class="dashboard-view">
+            <h2 class="section-title">Explorar Mapa de Sedes</h2>
+            <p style="color: #666; margin-bottom: 20px;">Encuentra cafeterías, librerías y espacios culturales cerca de ti donde se reúnen nuestros clubes.</p>
+            <div style="width: 100%; height: 500px; border-radius: 12px; overflow: hidden; box-shadow: var(--card-shadow); border: 2px solid #eee;">
+                <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d14945.0!2d-103.35!3d20.67!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1ses-419!2smx!4v1680000000000!5m2!1ses-419!2smx" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </div>
+        </div>
+
+        <div id="global-comunidad" class="dashboard-view">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 class="section-title" style="margin: 0;">Comunidad BiblioRed</h2>
+            </div>
+            <div id="comunidad-grid" class="global-grid"></div>
+        </div>
+
+        <div id="global-espacios" class="dashboard-view">
+            <h2 class="section-title">Espacios y Sedes Culturales</h2>
+            <div id="espacios-container" class="global-grid"></div>
+        </div>
+
+        <div id="global-autores" class="dashboard-view">
+            <h2 class="section-title">Autores Destacados</h2>
+            <div id="autores-container" class="global-grid"></div>
+        </div>
+
+        <div id="global-libros" class="dashboard-view">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 class="section-title" style="margin: 0;">Biblioteca Virtual</h2>
+                <select style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline: none;">
+                    <option>Mejor valorados</option>
+                    <option>Más leídos</option>
+                </select>
+            </div>
+            <div id="biblioteca-container" class="global-grid"></div>
+        </div>
+
+        <div id="global-clubes" class="dashboard-view">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 class="section-title" style="margin: 0;">Directorio de Clubes</h2>
+                <div style="display: flex; gap: 10px;">
+                    <select id="filtro-clubes" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline: none;">
+                        <option value="todos">Todos los clubes</option>
+                        <option value="online">Online</option>
+                        <option value="presencial">Presencial</option>
+                    </select>
+                </div>
+            </div>
+            <div class="global-grid" id="lista-clubes-container"></div>
+        </div>
+
+        <div id="vista-lector" class="dashboard-view">
+            <h2 class="section-title">Mi Biblioteca y Comunidad</h2>
+            <div class="dashboard-grid">
+                
+                <div class="panel-box" style="grid-column: 1 / -1;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3 style="margin: 0;"><i class="fas fa-book-reader"></i> Mis Lecturas Actuales</h3>
+                        <button class="btn-submit" style="width: auto; padding: 6px 12px; margin: 0; font-size: 0.8rem;" onclick="abrirModalEditarLectura(-1)"><i class="fas fa-plus"></i> Añadir Libro</button>
+                    </div>
+                    <div id="contenedor-lecturas-actuales" style="display: flex; flex-direction: column; gap: 15px;"></div>
+                </div>
+
+                <div class="panel-box">
+    <h3><i class="fas fa-trophy"></i> Mis Estadísticas</h3>
+    <p style="margin: 8px 0;"><i class="fas fa-book" style="color: var(--accent-orange);"></i> <strong id="stat-libros">0</strong> Libros leídos</p>
+    <p style="margin: 8px 0;"><i class="fas fa-users" style="color: var(--accent-orange);"></i> <strong id="stat-clubes">0</strong> Clubes a los que te has unido</p>
+    <p style="margin: 8px 0;"><i class="fas fa-star" style="color: var(--accent-orange);"></i> <strong id="stat-resenas">0</strong> Reseñas publicadas</p>
+</div>
+
+                <div class="panel-box">
+                    <h3><i class="fas fa-list"></i> Mi Lista de Próximas Lecturas</h3>
+                    <div id="contenedor-proximas-lecturas" style="display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px;"></div>
+                </div>
+
+                <div class="panel-box" style="grid-column: 1 / -1;">
+                    <h3><i class="fas fa-users"></i> Clubes en los que participo (Actuales)</h3>
+                    <div id="contenedor-clubes-lector-actuales" style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px;"></div>
+                </div>
+
+                <div class="panel-box" style="grid-column: 1 / -1;">
+                    <h3 style="margin: 0 0 15px 0;"><i class="fas fa-check-double"></i> Libros Terminados</h3>
+                    <div id="contenedor-lecturas-terminadas" style="display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px;"></div>
+                </div>
+
+                <div class="panel-box" style="grid-column: 1 / -1;">
+                    <h3><i class="fas fa-history"></i> Historial de Clubes (Terminados)</h3>
+                    <div id="contenedor-clubes-lector-historial" style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="vista-autor" class="dashboard-view">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 class="section-title" style="margin: 0;">Panel de Escritor</h2>
+            </div>
+            
+            <div class="dashboard-grid">
+                
+                <div class="panel-box">
+                    <h3><i class="fas fa-chart-line"></i> Mi Trayectoria</h3>
+                    <p style="margin: 8px 0;"><i class="fas fa-book-open" style="color: var(--accent-orange); width: 20px;"></i> <strong id="contador-libros-trayectoria">0</strong> Obras publicadas</p>
+                    <p style="margin: 8px 0;"><i class="fas fa-users" style="color: var(--accent-orange); width: 20px;"></i> <strong id="contador-eventos-trayectoria">0</strong> Eventos totales asistidos</p>
+                    <p style="margin: 8px 0;"><i class="fas fa-star" style="color: #f1c40f; width: 20px;"></i> <strong>0.0</strong> Promedio de reseñas de lectores</p>
+                </div>
+
+                <div class="panel-box">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                        <h3 style="margin: 0;"><i class="fas fa-book"></i> Mis Libros</h3>
+                        <button class="btn-submit" style="width: auto; margin: 0; padding: 6px 12px; font-size: 0.8rem;" onclick="abrirModal('modal-nuevo-libro')"><i class="fas fa-plus"></i> Nuevo</button>
+                    </div>
+                    <div id="lista-libros-autor" style="display: flex; flex-direction: column; gap: 5px;"></div>
+                </div>
+
+                <div class="panel-box" id="tarjeta-solicitud-autor">
+                    <h3><i class="fas fa-bell"></i> Solicitudes Recientes</h3>
+                    <div id="contenedor-solicitudes-autor"></div>
+                </div>
+
+                <div class="panel-box" style="grid-column: 1 / -1;">
+                    <h3><i class="fas fa-calendar-check"></i> Próximos Eventos Confirmados</h3>
+                    <div id="contenedor-eventos-autor-confirmados" style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px;"></div>
+                </div>
+
+                <div class="panel-box" style="grid-column: 1 / -1;">
+                    <h3><i class="fas fa-history"></i> Historial de Asistencias (Terminados)</h3>
+                    <!-- Aquí corregimos el ID para que coincida con el JS -->
+                    <div id="contenedor-historial-eventos-autor" style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="vista-organizador" class="dashboard-view">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 class="section-title" style="margin: 0;">Panel de Organizador</h2>
+                <button class="btn-submit" style="width: auto; margin: 0; padding: 10px 20px;" onclick="window.prepararModalCrearClub()"><i class="fas fa-plus-circle"></i> Crear Nuevo Club</button>
+            </div>
+
+            <div class="dashboard-grid">
+                
+                <div class="panel-box">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3 style="margin: 0;"><i class="fas fa-tasks"></i> Acciones Pendientes</h3>
+                        <button class="btn-submit" style="margin: 0; width: auto; padding: 6px 12px; font-size: 0.8rem;" onclick="abrirModal('modal-agregar-tarea')"><i class="fas fa-plus"></i> Agregar</button>
+                    </div>
+                    <div id="lista-acciones-pendientes-container"></div>
+                </div>
+
+                <div class="panel-box">
+                    <h3><i class="fas fa-chart-pie"></i> Resumen General</h3>
+                    <p style="margin: 8px 0;"><i class="fas fa-users" style="color: var(--accent-orange); width: 20px;"></i> <strong id="resumen-org-clubes">0</strong> Clubes bajo tu gestión</p>
+                    <p style="margin: 8px 0;"><i class="fas fa-user-check" style="color: var(--accent-orange); width: 20px;"></i> <strong id="resumen-org-lectores">0</strong> Lectores inscritos en total</p>
+                    <p style="margin: 8px 0;"><i class="fas fa-star" style="color: #f1c40f; width: 20px;"></i> <strong>4.8</strong> Valoración promedio</p>
+                </div>
+
+                <div class="panel-box" style="grid-column: 1 / -1;">
+                    <h3><i class="fas fa-clipboard-list"></i> Gestión de Clubes</h3>
+                    <div id="contenedor-clubes-organizador" style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px;"></div>
+                </div>
+                <!-- NUEVO PANEL DE SEGUIMIENTO -->
+                <div class="panel-box" style="grid-column: 1 / -1;">
+                    <h3><i class="fas fa-user-clock"></i> Seguimiento de Invitaciones a Autores</h3>
+                    <div id="contenedor-seguimiento-autores" style="display: flex; gap: 20px; overflow-x: auto; padding-bottom: 10px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="vista-sede" class="dashboard-view">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 class="section-title" style="margin: 0;">Panel de Espacio Cultural</h2>
+            </div>
+
+            <div class="dashboard-grid">
+                <!-- Panel de Perfil de la Sede -->
+                <div class="panel-box">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3 style="margin: 0;"><i class="fas fa-store"></i> Perfil de la Sede</h3>
+                        <button class="btn-outline" style="width: auto; margin: 0; padding: 4px 10px; font-size: 0.8rem;" onclick="abrirModal('modal-editar-sede')"><i class="fas fa-edit"></i> Editar Perfil</button>
+                    </div>
+                    <div id="info-perfil-sede"></div>
+                </div>
+
+                <!-- Panel de Calendario -->
+                <div class="panel-box">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3 style="margin: 0;"><i class="fas fa-calendar-alt"></i> Disponibilidad</h3>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <button class="btn-outline" style="margin:0; padding: 4px 10px;" onclick="cambiarMesSede(-1)"><i class="fas fa-chevron-left"></i></button>
+                            <strong id="mes-anio-sede" style="color: var(--header-bg); min-width: 100px; text-align: center;">Mes Año</strong>
+                            <button class="btn-outline" style="margin:0; padding: 4px 10px;" onclick="cambiarMesSede(1)"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; font-size: 0.85rem; margin-top: 15px; font-weight: bold; color: #555;">
+                        <div>D</div><div>L</div><div>M</div><div>X</div><div>J</div><div>V</div><div>S</div>
+                    </div>
+                    <div id="calendario-sede" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; font-size: 0.85rem; margin-top: 5px;"></div>
+                    <div style="display: flex; gap: 15px; font-size: 0.8rem; margin-top: 15px; justify-content: center;">
+                        <span style="color: #27ae60;"><i class="fas fa-square"></i> Libre</span>
+                        <span style="color: #e74c3c;"><i class="fas fa-square"></i> Ocupado / Reservado</span>
+                    </div>
+                </div>
+
+                <!-- Panel de Solicitudes de Reserva -->
+                <div class="panel-box" style="grid-column: 1 / -1;">
+                    <h3><i class="fas fa-envelope-open-text"></i> Solicitudes de Reserva</h3>
+                    <div id="contenedor-reservas-sede" style="display: flex; gap: 20px; overflow-x: auto; padding-bottom: 10px;"></div>
+                </div>
+
+                <!-- Panel de Bandeja de Cotizaciones Nuevas -->
+                <div class="panel-box" style="grid-column: 1 / -1;">
+                    <h3><i class="fas fa-file-invoice-dollar"></i> Bandeja de Cotizaciones Nuevas</h3>
+                    <div id="contenedor-cotizaciones-sede" style="display: flex; gap: 20px; overflow-x: auto; padding-bottom: 10px;"></div>
+                </div>
+
+                <!-- Panel de Cotizaciones Enviadas -->
+                <div class="panel-box" style="grid-column: 1 / -1;">
+                    <h3><i class="fas fa-paper-plane"></i> Cotizaciones Enviadas</h3>
+                    <div id="contenedor-cotizaciones-enviadas" style="display: flex; gap: 20px; overflow-x: auto; padding-bottom: 10px;"></div>
+                </div>
+
+                <!-- Panel de Seguimiento e Historial -->
+                <div class="panel-box" style="grid-column: 1 / -1;">
+                    <h3><i class="fas fa-clipboard-check"></i> Seguimiento (Aceptadas / Rechazadas)</h3>
+                    <div id="contenedor-cotizaciones-seguimiento" style="display: flex; gap: 20px; overflow-x: auto; padding-bottom: 10px;"></div>
+                </div>
+
+                <!-- Panel de Eventos Programados -->
+                <div class="panel-box" style="grid-column: 1 / -1;">
+                    <h3><i class="fas fa-calendar-check"></i> Eventos Programados</h3>
+                    <div id="contenedor-eventos-sede" style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 15px;"></div>
+                </div>
+
+                <!-- ✨ NUEVO: Panel de Historial de Eventos (Terminados) ✨ -->
+                <div class="panel-box" style="grid-column: 1 / -1;">
+                    <h3><i class="fas fa-history"></i> Historial de Eventos (Concluidos)</h3>
+                    <div id="contenedor-eventos-terminados-sede" style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 15px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="modal-editar-lectura" class="auth-overlay">
+            <div class="auth-box" style="width: 400px; max-width: 95%;">
+                <span class="close-modal" onclick="cerrarModal('modal-editar-lectura')">×</span>
+                <h2 id="titulo-modal-lectura" style="color: var(--header-bg); margin-bottom: 20px;">Actualizar Lectura</h2>
+                <form id="form-editar-lectura">
+                    <div class="form-group">
+                        <label>Nombre del Libro</label>
+                        <input type="text" id="input-lectura-titulo" placeholder="Ej: 1984" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Autor</label>
+                        <input type="text" id="input-lectura-autor" placeholder="Ej: George Orwell" required>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group">
+                            <label>Páginas Leídas</label>
+                            <input type="number" id="input-lectura-leidas" min="0" placeholder="Ej: 150" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Total Páginas</label>
+                            <input type="number" id="input-lectura-totales" min="1" placeholder="Ej: 300" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-submit" style="margin-top: 15px;">Guardar</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="modal-detalle-club-lector" class="auth-overlay">
+            <div class="auth-box" style="width: 450px; max-width: 95%; text-align: left;">
+                <span class="close-modal" onclick="cerrarModal('modal-detalle-club-lector')">×</span>
+                <h2 id="detalle-club-nombre" style="color: var(--header-bg); margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;">Nombre del Club</h2>
+                <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <p style="font-size: 0.95rem; margin: 0 0 8px 0; color: #333;"><i class="fas fa-book-open" style="color: var(--accent-orange); width: 25px;"></i> Leyendo: <strong id="detalle-club-libro">Libro</strong></p>
+                    <p style="font-size: 0.9rem; color: #555; margin: 0 0 8px 0;"><i class="fas fa-tags" style="color: var(--accent-orange); width: 25px;"></i> Temática: <span id="detalle-club-tematica">Temática</span></p>
+                    <p style="font-size: 0.9rem; color: #555; margin: 0 0 8px 0;"><i class="fas fa-user-tie" style="color: var(--accent-orange); width: 25px;"></i> Organizador: <span id="detalle-club-org">Org</span></p>
+                    <p style="font-size: 0.9rem; color: #555; margin: 0 0 8px 0;"><i class="fas fa-clock" style="color: var(--accent-orange); width: 25px;"></i> <span id="detalle-club-horario">Horario / Fecha</span></p>
+                    <p style="font-size: 0.9rem; color: #555; margin: 0 0 8px 0;"><i class="fas fa-map-marker-alt" style="color: var(--accent-orange); width: 25px;"></i> <span id="detalle-club-lugar">Lugar</span></p>
+                    <p style="font-size: 0.9rem; color: #555; margin: 0;"><i class="fas fa-users" style="color: var(--accent-orange); width: 25px;"></i> Cupo Máximo: <span id="detalle-club-cupo">Max</span></p>
+                </div>
+                <div style="display: flex; gap: 10px;" id="botones-detalle-club">
+                    <button id="btn-detalle-foro" class="btn-submit" style="margin: 0; flex: 1;">Ir al foro</button>
+                    <button id="btn-detalle-notas" class="btn-outline" style="margin: 0; flex: 1;">Agregar Notas</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="modal-notas-club" class="auth-overlay">
+            <div class="auth-box" style="width: 450px; max-width: 95%;">
+                <span class="close-modal" onclick="cerrarModal('modal-notas-club')">×</span>
+                <h2 style="color: var(--header-bg); margin-bottom: 20px;">Mis Notas - <span id="notas-club-nombre"></span></h2>
+                <form id="form-notas-club">
+                    <textarea id="texto-nota" rows="5" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; resize: vertical;" placeholder="Escribe tus reflexiones, citas favoritas o tareas..." required></textarea>
+                    <button type="submit" class="btn-submit" style="margin-top: 15px;">Guardar Notas</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="modal-detalle-libro" class="auth-overlay">
+            <div class="auth-box" style="width: 450px; max-width: 95%; text-align: left; max-height: 90vh; overflow-y: auto;">
+                <span class="close-modal" onclick="cerrarModal('modal-detalle-libro')">×</span>
+                <h2 id="det-libro-titulo" style="color: var(--header-bg); margin-top: 0; margin-bottom: 15px; border-bottom: 2px solid #eee; padding-bottom: 10px;">Título del Libro</h2>
+                <p style="font-size: 0.9rem; margin-bottom: 8px;"><strong><i class="fas fa-tags" style="color: var(--accent-orange); width: 20px;"></i> Género:</strong> <span id="det-libro-genero"></span></p>
+                <p style="font-size: 0.9rem; margin-bottom: 15px;"><strong><i class="fas fa-file-alt" style="color: var(--accent-orange); width: 20px;"></i> Páginas:</strong> <span id="det-libro-paginas"></span></p>
+                <p style="font-style: italic; color: #555; line-height: 1.5; font-size: 0.9rem; background: #f9f9f9; padding: 15px; border-radius: 5px; border-left: 3px solid var(--accent-orange);" id="det-libro-sinopsis"></p>
+                
+                <div id="det-libro-resenas-container" style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;">
+                    <h4 style="margin: 0 0 10px 0; color: #333; font-size: 1rem;"><i class="fas fa-star" style="color: #f1c40f;"></i> Reseñas de la comunidad</h4>
+                    <div id="lista-resenas-dinamicas"></div>
+                </div>
+
+                <div style="text-align: right; margin-top: 20px;">
+                    <button class="btn-outline" style="margin: 0; padding: 8px 15px; font-size: 0.85rem;" onclick="cerrarModal('modal-detalle-libro')">Volver</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="modal-nuevo-libro" class="auth-overlay">
+            <div class="auth-box" style="width: 450px; max-width: 95%;">
+                <span class="close-modal" onclick="cerrarModal('modal-nuevo-libro')">×</span>
+                <h2 style="color: var(--header-bg); margin-bottom: 20px;">Anunciar Nuevo Libro</h2>
+                <form id="form-nuevo-libro">
+                    <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 15px;">
+                        <img id="preview-portada-nuevo" src="https://via.placeholder.com/100x150?text=Portada" style="width: 100px; height: 150px; object-fit: cover; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px;">
+                        <input type="file" id="input-portada-nuevo" accept="image/*" style="display: none;" onchange="if(this.files[0]) { let r=new FileReader(); r.onload=e=>document.getElementById('preview-portada-nuevo').src=e.target.result; r.readAsDataURL(this.files[0]); }">
+                        <button type="button" class="btn-outline" style="margin:0; padding: 5px 10px; font-size: 0.8rem; width: auto; color: #666; border-color: #ccc;" onclick="document.getElementById('input-portada-nuevo').click()">Subir Portada</button>
+                    </div>
+                    <div class="form-group">
+                        <label>Título de la Obra</label>
+                        <input type="text" id="nuevo-libro-titulo" placeholder="Ej: La caída del sol" required>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group">
+                            <label>Género</label>
+                            <input type="text" id="nuevo-libro-genero" placeholder="Ej: Ciencia Ficción" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Páginas</label>
+                            <input type="number" id="nuevo-libro-paginas" placeholder="Ej: 320" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Sinopsis breve</label>
+                        <textarea id="nuevo-libro-sinopsis" rows="4" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; resize: vertical;" required></textarea>
+                    </div>
+                    <button type="submit" class="btn-submit" style="margin-top: 15px;">Publicar Obra</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="modal-editar-libro-autor" class="auth-overlay">
+            <div class="auth-box" style="width: 450px; max-width: 95%;">
+                <span class="close-modal" onclick="cerrarModal('modal-editar-libro-autor')">×</span>
+                <h2 style="color: var(--header-bg); margin-bottom: 20px;">Editar Obra</h2>
+                <form id="form-editar-libro-autor">
+                    <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 15px;">
+                        <img id="preview-portada-editar" src="https://via.placeholder.com/100x150?text=Portada" style="width: 100px; height: 150px; object-fit: cover; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px;">
+                        <input type="file" id="input-portada-editar" accept="image/*" style="display: none;" onchange="if(this.files[0]) { let r=new FileReader(); r.onload=e=>document.getElementById('preview-portada-editar').src=e.target.result; r.readAsDataURL(this.files[0]); }">
+                        <button type="button" class="btn-outline" style="margin:0; padding: 5px 10px; font-size: 0.8rem; width: auto; color: #666; border-color: #ccc;" onclick="document.getElementById('input-portada-editar').click()">Cambiar Portada</button>
+                    </div>
+                    <div class="form-group">
+                        <label>Título de la Obra</label>
+                        <input type="text" id="edit-libro-titulo" required>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group">
+                            <label>Género</label>
+                            <input type="text" id="edit-libro-genero" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Páginas</label>
+                            <input type="number" id="edit-libro-paginas" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Sinopsis breve</label>
+                        <textarea id="edit-libro-sinopsis" rows="4" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; resize: vertical;" required></textarea>
+                    </div>
+                    <button type="submit" class="btn-submit" style="margin-top: 15px;">Guardar Cambios</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="modal-detalle-evento-autor" class="auth-overlay">
+            <div class="auth-box" style="width: 450px; max-width: 95%; text-align: left; max-height: 90vh; overflow-y: auto;">
+                <span class="close-modal" onclick="cerrarModal('modal-detalle-evento-autor')">×</span>
+                <h2 id="detalle-evento-nombre" style="color: var(--header-bg); margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;">Nombre Evento</h2>
+                <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <p style="font-size: 0.95rem; margin: 0 0 8px 0; color: #333;"><i class="fas fa-book-open" style="color: var(--accent-orange); width: 25px;"></i> Obra: <strong id="detalle-evento-libro">Libro</strong></p>
+                    <p style="font-size: 0.9rem; color: #555; margin: 0 0 8px 0;"><i class="fas fa-user-tie" style="color: var(--accent-orange); width: 25px;"></i> Organizador: <span id="detalle-evento-org">Org</span></p>
+                    <p style="font-size: 0.9rem; color: #555; margin: 0 0 8px 0;"><i class="fas fa-clock" style="color: var(--accent-orange); width: 25px;"></i> <span id="detalle-evento-horario">Horario / Fecha</span></p>
+                    <p style="font-size: 0.9rem; color: #555; margin: 0 0 8px 0;"><i class="fas fa-map-marker-alt" style="color: var(--accent-orange); width: 25px;"></i> <span id="detalle-evento-lugar">Lugar</span></p>
+                    <p style="font-size: 0.9rem; color: #555; margin: 0;"><i class="fas fa-users" style="color: var(--accent-orange); width: 25px;"></i> Aforo esperado: <span id="detalle-evento-cupo">Max</span></p>
+                </div>
+                <div id="detalle-evento-notas-container" style="margin-bottom: 20px;">
+                    <h4 style="margin: 0 0 10px 0; color: var(--header-bg); border-bottom: 1px solid #eee; padding-bottom: 5px;">Mis Notas</h4>
+                    <div id="lista-notas-evento"></div>
+                </div>
+                <div style="display: flex; gap: 10px;" id="botones-detalle-evento">
+                    <button id="btn-evento-chat" class="btn-submit" style="margin: 0; flex: 1;">Mensajear Org</button>
+                    <button id="btn-evento-notas" class="btn-outline" style="margin: 0; flex: 1;">Agregar Notas</button>
+                </div>
+            </div>
+        </div>
+
+    <div id="modal-crear-club" class="auth-overlay">
+    <div class="auth-box" style="width: 500px; max-width: 95%;">
+        <span class="close-modal" onclick="cerrarModal('modal-crear-club')">×</span>
+        <h2 style="color: var(--header-bg); margin-bottom: 20px;">Crear Nuevo Club</h2>
+        <form id="form-crear-club">
+            <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 15px;">
+                <img id="preview-portada-club" src="https://via.placeholder.com/400x200?text=Portada+Club" style="width: 100%; height: 120px; object-fit: cover; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px;">
+                <input type="file" id="input-portada-club" accept="image/*" style="display: none;" onchange="if(this.files[0]) { let r=new FileReader(); r.onload=e=>document.getElementById('preview-portada-club').src=e.target.result; r.readAsDataURL(this.files[0]); }">
+                <button type="button" class="btn-outline" style="margin:0; padding: 5px 10px; font-size: 0.8rem; width: auto; color: #666; border-color: #ccc;" onclick="document.getElementById('input-portada-club').click()">Subir Portada del Club</button>
+            </div>
+            
+            <div class="form-group">
+                <label>Nombre del Club</label>
+                <input type="text" id="nuevo-club-nombre" placeholder="Ej: Amantes de la Ficción" required>
+            </div>
+            <div class="form-group">
+                <label>Temática Principal</label>
+                <input type="text" id="nuevo-club-tematica" placeholder="Ej: Ciencia Ficción, Misterio..." required>
+            </div>
+            <div class="form-group">
+                <label>Libro que están leyendo (Opcional)</label>
+                <input type="text" id="nuevo-club-libro" placeholder="Ej: 1984 - George Orwell">
+            </div>
+            
+            <div class="form-group">
+                <label>Modalidad y Sede</label>
+                <div style="display: flex; gap: 10px;">
+                    <select id="nuevo-club-modalidad" onchange="window.cambiarModalidadClub('nuevo')" required style="width: 40%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline: none;">
+                        <option value="Presencial">Presencial</option>
+                        <option value="Online">Online</option>
+                    </select>
+                    
+                    <!-- Desplegable para presencial -->
+                    <select id="nuevo-club-sede-select" style="width: 60%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline: none;">
+                        <!-- Se llena con JS -->
+                    </select>
+                    <!-- Input para online -->
+                    <input type="text" id="nuevo-club-sede-input" placeholder="Link de reunión..." style="width: 60%; display: none;">
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label>Cupo Máximo</label>
+                    <input type="number" id="nuevo-club-cupo" min="5" max="50" placeholder="Ej: 15" required>
+                </div>
+                <div class="form-group">
+                    <label>Estado de Sede y Pago</label>
+                    <div style="display: flex; gap: 10px;">
+                        <select id="nuevo-club-estado-sede" required style="width: 50%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline: none;">
+                            <option value="Pendiente de Pago">Pendiente de Pago</option>
+                            <option value="Abonado">Abonado</option>
+                            <option value="Liquidado">Liquidado / Confirmada</option>
+                            <option value="Cancelada">Cancelada</option>
+                        </select>
+                        <input type="number" id="nuevo-club-abono" placeholder="Abono ($)" style="width: 50%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline: none;" value="0">
+                    </div>
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label>Día del evento</label>
+                    <input type="date" id="nuevo-club-fecha" required>
+                </div>
+                <div class="form-group">
+                    <label>Hora</label>
+                    <input type="time" id="nuevo-club-hora" required>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn-submit" style="margin-top: 15px;">Crear Club</button>
+        </form>
+    </div>
+</div>
+
+        <div id="modal-editar-club" class="auth-overlay">
+            <div class="auth-box" style="width: 500px; max-width: 95%;">
+                <span class="close-modal" onclick="cerrarModal('modal-editar-club')">×</span>
+                <h2 style="color: var(--header-bg); margin-bottom: 20px;">Editar Club</h2>
+                <form id="form-editar-club">
+                    <div class="form-group">
+                        <label>Nombre del Club</label>
+                        <input type="text" id="edit-club-nombre" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Temática Principal</label>
+                        <input type="text" id="edit-club-tematica" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Libro que están leyendo (Opcional)</label>
+                        <input type="text" id="edit-club-libro">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group">
+                            <label>Autor Invitado (Opcional)</label>
+                            <input type="text" id="edit-club-autor">
+                        </div>
+                        <div class="form-group">
+                            <label>Asistencia del Autor</label>
+                            <select id="edit-club-asistencia" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline: none;">
+                                <option value="Pendiente">Pendiente</option>
+                                <option value="Confirmada">Confirmada</option>
+                                <option value="Rechazada">Rechazada</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Modalidad y Sede</label>
+                        <div style="display: flex; gap: 10px;">
+                            <select id="edit-club-modalidad" required style="width: 40%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline: none;">
+                                <option value="Presencial">Presencial</option>
+                                <option value="Online">Online</option>
+                            </select>
+                            <input type="text" id="edit-club-sede" required style="width: 60%;">
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group">
+                            <label>Cupo Máximo</label>
+                            <input type="number" id="edit-club-cupo" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Estado de Sede y Pago</label>
+                            <div style="display: flex; gap: 10px;">
+                                <select id="edit-club-estado-sede" required style="width: 50%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline: none;">
+                                    <option value="Pendiente de Pago">Pendiente de Pago</option>
+                                    <option value="Abonado">Abonado</option>
+                                    <option value="Liquidado">Liquidado / Confirmada</option>
+                                    <option value="Cancelada">Cancelada</option>
+                                </select>
+                                <input type="number" id="edit-club-abono" placeholder="Abono ($)" style="width: 50%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline: none;" value="0">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Día y Hora</label>
+                        <input type="text" id="edit-club-horario" required>
+                    </div>
+                    <button type="submit" class="btn-submit" style="margin-top: 15px;">Guardar Cambios</button>
+                </form>
+            </div>
+        </div>
+
+<div id="modal-editar-sede" class="auth-overlay">
+        <div class="auth-box" style="width: 500px; max-width: 95%;">
+            <span class="close-modal" onclick="cerrarModal('modal-editar-sede')">×</span>
+            <h2 style="color: var(--header-bg); margin-bottom: 20px;">Editar Perfil de Sede</h2>
+            <form id="form-editar-sede">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label>Cupo Mínimo</label>
+                        <input type="number" id="sede-min" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Cupo Máximo</label>
+                        <input type="number" id="sede-max" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Precio por Persona (MXN)</label>
+                    <input type="number" id="sede-precio" required>
+                </div>
+                <div class="form-group">
+                    <label>Amenidades (Separadas por coma)</label>
+                    <textarea id="sede-amenidades" rows="2" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Cuenta Bancaria (Banco y Número)</label>
+                    <input type="text" id="sede-cuenta" placeholder="Ej: BBVA - 1234567890" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                </div>
+                <div class="form-group">
+                    <label>Promociones u Ofertas Activas</label>
+                    <textarea id="sede-promociones" rows="3" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;"></textarea>
+                </div>
+                <button type="submit" class="btn-submit" style="margin-top: 15px;">Guardar Cambios</button>
+            </form>
+        </div>
+    </div>
+
+        <div id="modal-editar-evento-sede" class="auth-overlay">
+            <div class="auth-box" style="width: 500px; max-width: 95%;">
+                <span class="close-modal" onclick="cerrarModal('modal-editar-evento-sede')">×</span>
+                <h2 style="color: var(--header-bg); margin-bottom: 20px;">Editar Evento</h2>
+                <form id="form-editar-evento-sede">
+                    <div class="form-group">
+                        <label>Nombre del Evento</label>
+                        <input type="text" id="edit-ev-sede-nombre" required>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group">
+                            <label>Organizador</label>
+                            <input type="text" id="edit-ev-sede-org" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Fecha y Hora</label>
+                            <input type="text" id="edit-ev-sede-fecha" required>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group">
+                            <label>Asistentes Esperados</label>
+                            <input type="number" id="edit-ev-sede-personas" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Estado del Evento</label>
+                            <select id="edit-ev-sede-estado" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline: none;">
+                                <option value="Pendiente de Anticipo">Pendiente de Anticipo</option>
+                                <option value="En Proceso">En Proceso</option>
+                                <option value="Liquidado">Liquidado / Pagado</option>
+                                <option value="Cancelado">Cancelado</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group">
+                            <label>Total Acordado ($)</label>
+                            <input type="number" id="edit-ev-sede-total" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Abono Recibido ($)</label>
+                            <input type="number" id="edit-ev-sede-abono" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-submit" style="margin-top: 15px;">Guardar Cambios</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="modal-dia-calendario" class="auth-overlay">
+            <div class="auth-box" style="width: 400px; max-width: 95%;">
+                <span class="close-modal" onclick="cerrarModal('modal-dia-calendario')">×</span>
+                <h2 id="titulo-dia-calendario" style="color: var(--header-bg); margin-bottom: 20px;">Eventos del Día</h2>
+                <div id="contenido-dia-calendario" style="text-align: left;"></div>
+            </div>
+        </div>
+
+        <div id="modal-agregar-tarea" class="auth-overlay">
+            <div class="auth-box" style="width: 400px; max-width: 95%;">
+                <span class="close-modal" onclick="cerrarModal('modal-agregar-tarea')">×</span>
+                <h2 style="color: var(--header-bg); margin-bottom: 20px;">Nueva Tarea</h2>
+                <form id="form-agregar-tarea">
+                    <div class="form-group">
+                        <label style="text-align: left; display: block;">Descripción de la tarea</label>
+                        <input type="text" id="nueva-tarea-texto" placeholder="Ej: Confirmar asistencia del autor..." required>
+                    </div>
+                    <button type="submit" class="btn-submit" style="margin-top: 15px;">Guardar Tarea</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="modal-miembros-club" class="auth-overlay">
+            <div class="auth-box" style="width: 400px; max-width: 95%;">
+                <span class="close-modal" onclick="cerrarModal('modal-miembros-club')">×</span>
+                <h2 id="titulo-miembros-club" style="color: var(--header-bg); margin-bottom: 20px;">Miembros del Club</h2>
+                <div id="lista-miembros-club" style="text-align: left; max-height: 300px; overflow-y: auto;">
+                </div>
+            </div>
+        </div>
+
+<div id="modal-pedir-cotizacion" class="auth-overlay">
+        <div class="auth-box" style="width: 450px; max-width: 95%;">
+            <span class="close-modal" onclick="cerrarModal('modal-pedir-cotizacion')">×</span>
+            <h2 style="color: var(--header-bg); margin-bottom: 20px;">Pedir Cotización</h2>
+            <form id="form-pedir-cotizacion">
+                <input type="hidden" id="pedir-cot-username-sede">
+                <div class="form-group">
+                    <label style="text-align: left; display: block;">Concepto (¿Qué necesitas?)</label>
+                    <textarea id="pedir-cot-concepto" rows="3" placeholder="Ej: Espacio para 20 personas, proyector..." required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;"></textarea>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label style="text-align: left; display: block;">Personas</label>
+                        <input type="number" id="pedir-cot-personas" required>
+                    </div>
+                    <div class="form-group">
+                        <label style="text-align: left; display: block;">Fecha</label>
+                        <input type="date" id="pedir-cot-fecha" required>
+                    </div>
+                    <div class="form-group">
+                        <label style="text-align: left; display: block;">Hora</label>
+                        <input type="time" id="pedir-cot-hora" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit" style="margin-top: 15px;">Enviar Solicitud</button>
+            </form>
+        </div>
+    </div>
+        
+<div id="modal-pedir-reserva" class="auth-overlay">
+            <div class="auth-box" style="width: 500px; max-width: 95%;">
+                <span class="close-modal" onclick="cerrarModal('modal-pedir-reserva')">×</span>
+                <h2 style="color: var(--header-bg); margin-bottom: 20px;">Solicitar Reserva Directa</h2>
+                <form id="form-pedir-reserva">
+                    <input type="hidden" id="pedir-res-username-sede">
+                    <div class="form-group">
+                        <label style="text-align: left; display: block;">Nombre del Evento / Club</label>
+                        <input type="text" id="pedir-res-nombre" placeholder="Ej: Sesión Presencial Club Ficción" required>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                        <div class="form-group">
+                            <label style="text-align: left; display: block;">Asistentes</label>
+                            <input type="number" id="pedir-res-personas" required>
+                        </div>
+                        <div class="form-group">
+                            <label style="text-align: left; display: block;">Fecha</label>
+                            <input type="date" id="pedir-res-fecha" required>
+                        </div>
+                        <div class="form-group">
+                            <label style="text-align: left; display: block;">Hora</label>
+                            <input type="time" id="pedir-res-hora" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label style="text-align: left; display: block;">Notas, pedidos extras o dudas</label>
+                        <textarea id="pedir-res-notas" rows="3" placeholder="Ej: Necesitamos proyector, llegaremos 15 mins antes..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; resize: vertical;"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn-submit" style="margin-top: 15px;">Enviar Solicitud de Reserva</button>
+                </form>
+            </div>
+        </div>
+
+<div id="modal-enviar-cotizacion" class="auth-overlay">
+        <div class="auth-box" style="width: 550px; max-width: 95%;">
+            <span class="close-modal" onclick="cerrarModal('modal-enviar-cotizacion')">×</span>
+            <h2 style="color: var(--header-bg); margin-bottom: 20px;">Responder Cotización</h2>
+            <form id="form-enviar-cotizacion">
+                <input type="hidden" id="cot-id">
+                
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label style="text-align: left; display: block;">Concepto / Servicios solicitados</label>
+                        <textarea id="cot-concepto" rows="2" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; background: #f4f4f4; resize: none;" readonly></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label style="text-align: left; display: block;">Fecha y Hora</label>
+                        <!-- Aquí agregamos el campo de la fecha -->
+                        <textarea id="cot-fecha" rows="2" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; background: #fffdf5; color: var(--accent-orange); font-weight: bold; border-left: 3px solid var(--accent-orange); resize: none;" readonly></textarea>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label style="text-align: left; display: block;">Personas</label>
+                        <input type="number" id="cot-personas" style="background: #f4f4f4; width: 100%;" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label style="text-align: left; display: block;">Precio p/p ($)</label>
+                        <input type="number" id="cot-precio-persona" required style="width: 100%;">
+                    </div>
+                    <div class="form-group">
+                        <label style="text-align: left; display: block;">Precio Total ($)</label>
+                        <input type="number" id="cot-precio" required style="width: 100%;">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label style="text-align: left; display: block; color: var(--accent-orange); font-weight: bold;">Información General (Se adjuntará al org.)</label>
+                    <textarea id="cot-info-general" rows="3" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; background: #f4f4f4; resize: vertical;" readonly></textarea>
+                </div>
+                <div class="form-group">
+                    <label style="text-align: left; display: block;">Notas Adicionales</label>
+                    <textarea id="cot-notas" rows="2" placeholder="Ej: Se requiere 50% de anticipo..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; resize: vertical;"></textarea>
+                </div>
+                
+                <button type="submit" class="btn-submit" style="margin-top: 15px;"><i class="fas fa-paper-plane"></i> Enviar a Organizador</button>
+            </form>
+        </div>
+    </div>
+
+<!-- MODAL DETALLE DE COTIZACIÓN (VISTA DEL ORGANIZADOR) -->
+    <div id="modal-detalle-cotizacion" class="auth-overlay">
+        <div class="auth-box" style="width: 500px; max-width: 95%; text-align: left;">
+            <span class="close-modal" onclick="cerrarModal('modal-detalle-cotizacion')">×</span>
+            <h2 style="color: var(--header-bg); margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px;">Detalles de la Cotización</h2>
+            
+            <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid var(--accent-orange);">
+                <p style="margin: 0 0 15px 0; font-size: 1.1rem; color: #333;">Sede: <strong id="det-cot-sede" style="color: var(--header-bg);"></strong></p>
+                
+                <div style="display: flex; justify-content: space-between; margin-bottom: 15px; background: white; padding: 10px; border-radius: 5px; border: 1px solid #ddd;">
+                    <span style="font-size: 1rem; color: #27ae60;"><strong>Total:</strong> $<span id="det-cot-total"></span> MXN</span>
+                    <span style="font-size: 1rem; color: #555;"><strong>Por persona:</strong> $<span id="det-cot-pp"></span> MXN</span>
+                </div>
+                
+                <p style="margin: 0 0 8px 0; font-size: 0.95rem; font-weight: bold; color: var(--accent-orange);"><i class="fas fa-info-circle"></i> Condiciones y Notas de la Sede:</p>
+                <div id="det-cot-notas" style="font-size: 0.85rem; color: #555; white-space: pre-wrap; background: white; padding: 15px; border: 1px solid #ddd; border-radius: 5px; max-height: 200px; overflow-y: auto;"></div>
+            </div>
+
+            <div style="display: flex; gap: 10px;" id="det-cot-botones">
+                <!-- Los botones se insertan desde JS -->
+            </div>
+        </div>
+    </div>
+
+<!-- MODAL PARA PEDIR EL ANTICIPO AL ACEPTAR LA RESERVA -->
+    <div id="modal-ingresar-abono" class="auth-overlay">
+        <div class="auth-box" style="width: 400px; max-width: 95%;">
+            <span class="close-modal" onclick="cerrarModal('modal-ingresar-abono')">×</span>
+            <h2 style="color: var(--header-bg); margin-bottom: 20px;">Confirmar Reserva</h2>
+            <p style="font-size: 0.9rem; color: #555; text-align: left; margin-bottom: 15px;">
+                Ingresa la cantidad de anticipo recibida. Si aún no te han pagado ingresa 0. Si ya liquidaron, ingresa el total.
+            </p>
+            <form id="form-ingresar-abono">
+                <input type="hidden" id="abono-id-evento">
+                <div class="form-group">
+                    <label style="text-align: left; display: block; font-weight: bold; color: var(--accent-orange);">Monto Recibido ($ MXN)</label>
+                    <input type="number" id="abono-monto" min="0" step="0.01" value="0" required style="width: 100%; padding: 10px; font-size: 1.1rem;">
+                </div>
+                <button type="submit" class="btn-submit" style="margin-top: 15px;"><i class="fas fa-check-double"></i> Validar y Programar Evento</button>
+            </form>
+        </div>
+    </div>
+
+<!-- MODAL PARA ESCRIBIR RESEÑA -->
+        <div id="modal-escribir-resena" class="auth-overlay">
+            <div class="auth-box" style="width: 450px; max-width: 95%; text-align: left;">
+                <span class="close-modal" onclick="cerrarModal('modal-escribir-resena')">×</span>
+                <h2 style="color: var(--header-bg); margin-bottom: 5px; margin-top: 0;">Escribir Reseña</h2>
+                <p id="resena-libro-titulo" style="margin-top: 0; margin-bottom: 20px; font-weight: bold; color: var(--accent-orange);"></p>
+                <form id="form-escribir-resena">
+                    <input type="hidden" id="resena-id-libro">
+                    <div class="form-group">
+                        <label>Calificación (1 al 5)</label>
+                        <select id="resena-calificacion" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline: none; background: #fff;">
+                            <option value="5">⭐⭐⭐⭐⭐ (5) Excelente</option>
+                            <option value="4">⭐⭐⭐⭐ (4) Muy bueno</option>
+                            <option value="3">⭐⭐⭐ (3) Bueno</option>
+                            <option value="2">⭐⭐ (2) Regular</option>
+                            <option value="1">⭐ (1) Malo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Tu comentario</label>
+                        <textarea id="resena-comentario" rows="4" placeholder="¿Qué te pareció el libro? ¿Lo recomendarías?..." required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; resize: vertical;"></textarea>
+                    </div>
+                    <button type="submit" class="btn-submit" style="margin-top: 15px;"><i class="fas fa-paper-plane"></i> Publicar Reseña</button>
+                </form>
+            </div>
+        </div>
+
+<!-- MODAL PARA PROPONER EVENTO AL AUTOR -->
+    <div id="modal-invitar-autor" class="auth-overlay">
+        <div class="auth-box" style="width: 550px; max-width: 95%; text-align: left;">
+            <span class="close-modal" onclick="cerrarModal('modal-invitar-autor')">×</span>
+            <h2 style="color: var(--header-bg); margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px;">Proponer Evento a <span id="invitar-autor-titulo" style="color: var(--accent-orange);"></span></h2>
+            
+            <form id="form-invitar-autor">
+                <input type="hidden" id="invitar-autor-id">
+                <input type="hidden" id="invitar-autor-nombre">
+                
+                <div class="form-group">
+                    <label>¿A qué club lo deseas invitar?</label>
+                    <select id="invitar-club-select" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline: none;"></select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Formato del Evento</label>
+                    <select id="invitar-formato" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline: none;">
+                        <option value="Q&A (Preguntas y Respuestas)">Q&A (Preguntas y Respuestas)</option>
+                        <option value="Firma de Libros">Firma de Libros</option>
+                        <option value="Lectura de Capítulo">Lectura de Capítulo</option>
+                        <option value="Charla / Panel Universitario">Charla / Panel Universitario</option>
+                    </select>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label>Fecha sugerida</label>
+                        <input type="date" id="invitar-fecha" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Hora</label>
+                        <input type="time" id="invitar-hora" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Lugar / Sede Registrada</label>
+                    <select id="invitar-sede" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline: none;">
+                        <!-- Se llenará automáticamente con tu lista de sedes -->
+                    </select>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                    <div class="form-group">
+                        <label>País</label>
+                        <select id="invitar-pais" onchange="window.actualizarCiudades()" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline:none;">
+                            <option value="">Selecciona País...</option>
+                            <option value="México">México</option>
+                            <option value="Colombia">Colombia</option>
+                            <option value="España">España</option>
+                            <option value="Argentina">Argentina</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Ciudad</label>
+                        <select id="invitar-ciudad" onchange="window.actualizarMunicipios()" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline:none;">
+                            <option value="">Selecciona Ciudad...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Municipio</label>
+                        <select id="invitar-municipio" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline:none;">
+                            <option value="">Selecciona Municipio...</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-submit" style="margin-top: 15px;"><i class="fas fa-paper-plane"></i> Enviar Propuesta Formal</button>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- MODAL PARA EDITAR PROPUESTA AL AUTOR -->
+    <div id="modal-editar-propuesta" class="auth-overlay">
+        <div class="auth-box" style="width: 550px; max-width: 95%; text-align: left;">
+            <span class="close-modal" onclick="cerrarModal('modal-editar-propuesta')">×</span>
+            <h2 style="color: var(--header-bg); margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px;">Modificar Invitación a <span id="editar-propuesta-autor-titulo" style="color: var(--accent-orange);"></span></h2>
+            
+            <form id="form-editar-propuesta">
+                <input type="hidden" id="editar-propuesta-id-club">
+                <input type="hidden" id="editar-propuesta-autor-nombre">
+                
+                <p style="font-size: 0.85rem; color: #666; margin-bottom: 15px;">Actualiza los detalles del evento. Al guardar, el autor verá los nuevos datos en su panel.</p>
+
+                <div class="form-group">
+                    <label>Nuevo Formato del Evento</label>
+                    <select id="editar-propuesta-formato" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline: none;">
+                        <option value="Q&A (Preguntas y Respuestas)">Q&A (Preguntas y Respuestas)</option>
+                        <option value="Firma de Libros">Firma de Libros</option>
+                        <option value="Lectura de Capítulo">Lectura de Capítulo</option>
+                        <option value="Charla / Panel Universitario">Charla / Panel Universitario</option>
+                    </select>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label>Nueva Fecha</label>
+                        <input type="date" id="editar-propuesta-fecha" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nueva Hora</label>
+                        <input type="time" id="editar-propuesta-hora" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Nuevo Lugar / Sede Registrada</label>
+                    <select id="editar-propuesta-sede" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline: none;">
+                        <!-- Se llenará automáticamente -->
+                    </select>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                    <div class="form-group">
+                        <label>País</label>
+                        <select id="editar-propuesta-pais" onchange="window.actualizarCiudadesEdicion()" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline:none;">
+                            <option value="">Selecciona País...</option>
+                            <option value="México">México</option>
+                            <option value="Colombia">Colombia</option>
+                            <option value="España">España</option>
+                            <option value="Argentina">Argentina</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Ciudad</label>
+                        <select id="editar-propuesta-ciudad" onchange="window.actualizarMunicipiosEdicion()" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline:none;">
+                            <option value="">Selecciona Ciudad...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Municipio</label>
+                        <select id="editar-propuesta-municipio" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline:none;">
+                            <option value="">Selecciona Municipio...</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-submit" style="margin-top: 15px;"><i class="fas fa-sync-alt"></i> Actualizar Invitación</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DE RESULTADOS DE BÚSQUEDA GLOBAL (CORREGIDO) -->
+    <div id="modal-resultados-busqueda" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; align-items: center; justify-content: center;">
+        <div class="modal-content" style="background: white; padding: 30px; border-radius: 8px; max-width: 600px; width: 90%; text-align: left; max-height: 85vh; overflow-y: auto; position: relative;">
+            <span class="close-btn" style="position: absolute; top: 15px; right: 20px; font-size: 1.5rem; cursor: pointer; color: #aaa;" onclick="cerrarModal('modal-resultados-busqueda')">&times;</span>
+            <h2 id="titulo-busqueda" style="margin-top: 0; color: var(--header-bg);"><i class="fas fa-search"></i> Resultados</h2>
+            
+            <h4 style="margin: 15px 0 5px 0; color: var(--accent-orange);">Clubes Encontrados</h4>
+            <div id="resultados-clubes" style="display: flex; flex-direction: column; gap: 10px; max-height: 200px; overflow-y: auto;"></div>
+            
+            <h4 style="margin: 15px 0 5px 0; color: #3498db;">Libros Encontrados</h4>
+            <div id="resultados-libros" style="display: flex; flex-direction: column; gap: 10px; max-height: 200px; overflow-y: auto;"></div>
+        </div>
+    </div>
+
+    </main>
+
+    <script src="script.js?v=8"></script>
+</body>
+</html>
